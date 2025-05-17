@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
 	"github.com/SelfScriptKiddies/tweaker/internal/config"
 )
 
@@ -17,12 +16,11 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	log.Printf("starting server on %s", addr)
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, World!")
-	})
+	http.HandleFunc("/", HandleIndex)
+	http.HandleFunc("/lol", HandleLol)
 
-	fs := http.FileServer(http.Dir("assets/"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	// fs := http.FileServer(http.Dir("assets/"))
+	// http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
