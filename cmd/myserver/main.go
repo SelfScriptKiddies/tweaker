@@ -2,30 +2,13 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
-	"path/filepath"
 
 	"github.com/SelfScriptKiddies/tweaker/internal/config"
+	"github.com/SelfScriptKiddies/tweaker/internal/middleware"
+	"github.com/SelfScriptKiddies/tweaker/internal/template"
 )
-
-func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
-	baseTemplate := "web/templates/layouts/base.html"
-	pageTemplate := fmt.Sprintf("web/templates/pages/%s.html", tmpl)
-
-	t, err := template.ParseFiles(baseTemplate, pageTemplate)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = t.ExecuteTemplate(w, filepath.Base(baseTemplate), data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
 
 func main() {
 	cfg, err := config.Load("config/config.yaml")
@@ -36,18 +19,31 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	log.Printf("starting server on %s", addr)
 
-	// Routes
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		renderTemplate(w, "login", nil)
+	// Create auth middleware config
+	authConfig := middleware.AuthConfig{
+		Username:     cfg.Auth.Username,
+		Password:     cfg.Auth.Password,
+		LoginURL:     "/login",
+		SecretCookie: cfg.Auth.SecretCookie,
+	}
+
+	// Create router
+	mux := http.NewServeMux()
+
+	// Public routes (no auth required)
+	mux.HandleFunc("/login", middleware.LoginHandler(authConfig))
+
+	// Protected routes
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		template.RenderTemplate(w, "default", nil)
 	})
 
-	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		renderTemplate(w, "login", nil)
-	})
-
-	// Static files
+	// Static files (no auth required)
 	fs := http.FileServer(http.Dir("web/static/"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	log.Fatal(http.ListenAndServe(addr, nil))
+	// Apply auth middleware to all routes
+	authMiddleware := middleware.AuthMiddleware(authConfig)
+
+	log.Fatal(http.ListenAndServe(addr, authMiddleware(mux)))
 }

@@ -13,3 +13,8 @@ database:
   pass: "mypassword"
   name: "mydb"
   sslmode: "disable"
+
+auth:
+  username: "admin"
+  password: "admin"
+  secret_cookie: "authorized"
