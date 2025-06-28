@@ -1,8 +1,9 @@
-{{ define "title" }}Login - My App{{ end }}
+{{ define "title" }}Login to Tweaker{{ end }}
 
 {{ define "content" }}
 <div class="login-container">
     <h2>Login</h2>
+    
     <form action="/login" method="POST">
         <div class="form-group">
             <label for="username">Username:</label>
@@ -12,6 +13,9 @@
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
         </div>
+        {{if .Error}}
+        <div class="error">{{.Error}}</div>
+        {{end}}
         <button type="submit">Login</button>
     </form>
 </div>

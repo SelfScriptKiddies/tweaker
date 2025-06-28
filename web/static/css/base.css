@@ -14,3 +14,13 @@ body {
     padding: 20px;
     border-radius: 10px;
 }
+
+.error {
+    color: red;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.form-group {
+    padding: 3px 0;
+}
