@@ -1,0 +1,170 @@
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+  font-family: "Courier New", monospace;
+  color: #000;
+}
+
+.main-block {
+  margin: 2% auto;
+  width: 80%;
+  max-width: 1000px;
+  text-align: center;
+  background-color: #fff;
+  color: #000;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.file-share-button {
+  background-color: #e7e7e7;
+  border-style: dashed;
+  border-color: #000000;
+  border-radius: 30px;
+  width: 100px;
+  height: 30px;
+  cursor: pointer; 
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.form-group {
+  padding: 3px 0;
+}
+
+.container {
+  background: #fff;
+  border-radius: 12px;
+  width: 800px;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.container > h2 {
+    text-align: center;
+}
+.tabs {
+  display: flex;
+  height: 50px;
+}
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  background: #fff;
+}
+.tab.active {
+  background: #e0e0e0;
+  border-bottom: 2px solid #000;
+}
+.content {
+  flex: 1;
+  position: relative;
+  padding: 20px;
+  overflow-y: auto;
+}
+.hidden {
+  display: none;
+}
+/* Login form styling */
+#login-form {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  margin: auto;
+}
+#login-form input {
+  margin-bottom: 10px;
+  padding: 8px;
+  font-family: inherit;
+  font-size: 14px;
+}
+#login-form button {
+  padding: 8px;
+  font-family: inherit;
+  cursor: pointer;
+}
+/* File share styling */
+#file-share ul {
+  list-style: none;
+  padding: 0;
+}
+#file-share li {
+  padding: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+  cursor: pointer;
+}
+.actions {
+  cursor: pointer;
+  padding: 0 6px;
+}
+/* Context menu */
+.context-menu {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: none;
+  z-index: 1000;
+}
+.context-menu ul {
+  margin: 0;
+  padding: 5px 0;
+  list-style: none;
+}
+.context-menu li {
+  padding: 5px 20px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.context-menu li:hover {
+  background: #eee;
+}
+.dropdown {
+  position: relative;
+}
+.dropdown-menu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+/* Reverse shells list */
+#shell-list {
+  list-style: none;
+  padding: 0;
+}
+#shell-list li {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+}
