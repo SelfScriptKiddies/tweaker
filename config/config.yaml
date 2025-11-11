@@ -4,7 +4,7 @@ server:
 
 log:
   level: "info"          # debug, info, warn, error
-  format: "console"      # console or json
+  env: "local"           # local, dev, prod
 
 database:
   host: "db.example.com"
