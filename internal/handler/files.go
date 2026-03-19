@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -309,12 +311,18 @@ func (h *FileHandler) CatchTCP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"port": port})
 }
 
-// Preview returns file content as text or formatted hex dump.
+// Preview returns file content as text or formatted hex dump in chunks.
+// Query params: path, mode (text|hex), offset (byte offset, default 0).
 func (h *FileHandler) Preview(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("path")
 	mode := r.URL.Query().Get("mode")
 	if mode == "" {
 		mode = "text"
+	}
+
+	offset, _ := strconv.ParseInt(r.URL.Query().Get("offset"), 10, 64)
+	if offset < 0 {
+		offset = 0
 	}
 
 	safe, err := h.safePath(filePath)
@@ -329,13 +337,24 @@ func (h *FileHandler) Preview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const maxSize = 1 << 20 // 1 MB
-	readSize := info.Size()
-	truncated := false
-	if readSize > maxSize {
-		readSize = maxSize
-		truncated = true
+	if offset >= info.Size() {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"content":  "",
+			"offset":   offset,
+			"read":     0,
+			"size":     info.Size(),
+			"has_more": false,
+		})
+		return
 	}
+
+	// Align offset to 16 bytes for hex mode
+	if mode == "hex" {
+		offset = offset - (offset % 16)
+	}
+
+	const chunkSize = 64 * 1024 // 64 KB
 
 	f, err := os.Open(safe)
 	if err != nil {
@@ -344,54 +363,36 @@ func (h *FileHandler) Preview(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 
-	data := make([]byte, readSize)
-	n, _ := io.ReadFull(f, data)
+	if offset > 0 {
+		f.Seek(offset, io.SeekStart)
+	}
+
+	data := make([]byte, chunkSize)
+	n, _ := f.Read(data)
 	data = data[:n]
 
-	var content string
-	if mode == "hex" {
-		content = formatHexDump(data)
-	} else {
-		content = strings.ToValidUTF8(string(data), "\ufffd")
-	}
+	hasMore := offset+int64(n) < info.Size()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"content":   content,
-		"size":      info.Size(),
-		"truncated": truncated,
-	})
-}
 
-func formatHexDump(data []byte) string {
-	var sb strings.Builder
-	for i := 0; i < len(data); i += 16 {
-		fmt.Fprintf(&sb, "%08x  ", i)
-		for j := 0; j < 16; j++ {
-			if j == 8 {
-				sb.WriteByte(' ')
-			}
-			if i+j < len(data) {
-				fmt.Fprintf(&sb, "%02x ", data[i+j])
-			} else {
-				sb.WriteString("   ")
-			}
-		}
-		sb.WriteString(" |")
-		end := i + 16
-		if end > len(data) {
-			end = len(data)
-		}
-		for j := i; j < end; j++ {
-			if data[j] >= 0x20 && data[j] <= 0x7e {
-				sb.WriteByte(data[j])
-			} else {
-				sb.WriteByte('.')
-			}
-		}
-		sb.WriteString("|\n")
+	if mode == "hex" {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"data":     base64.StdEncoding.EncodeToString(data),
+			"offset":   offset,
+			"read":     n,
+			"size":     info.Size(),
+			"has_more": hasMore,
+		})
+		return
 	}
-	return sb.String()
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"content":  strings.ToValidUTF8(string(data), "\ufffd"),
+		"offset":   offset,
+		"read":     n,
+		"size":     info.Size(),
+		"has_more": hasMore,
+	})
 }
 
 func jsonError(w http.ResponseWriter, msg string, code int) {

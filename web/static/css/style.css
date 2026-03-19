@@ -118,6 +118,11 @@ body {
   background: #f0f0f0;
   border-bottom: 2px solid #000;
 }
+.tab-icon {
+  flex: 0 0 44px;
+  font-size: 18px;
+  border-left: 1px solid #eee;
+}
 .content {
   flex: 1;
   position: relative;
@@ -313,6 +318,102 @@ body {
   font-size: 11px;
 }
 
+/* ===== Shell Generator ===== */
+.shell-gen-toggle {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+  border-bottom: 1px solid #eee;
+  user-select: none;
+}
+.shell-gen-toggle:hover {
+  background: #f8f8f8;
+}
+.shell-gen {
+  border-bottom: 1px solid #eee;
+  padding: 12px;
+}
+.shell-gen-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.shell-gen-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.shell-gen-row label {
+  font-size: 11px;
+  font-weight: bold;
+}
+.shell-gen-row input,
+.shell-gen-row select {
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  outline: none;
+}
+.shell-gen-row input:focus,
+.shell-gen-row select:focus {
+  border-color: #000;
+}
+#rsh-ip { width: 140px; }
+#rsh-port { width: 64px; }
+.shell-gen-filters {
+  display: flex;
+  gap: 4px;
+}
+.filter-btn {
+  background: #e7e7e7;
+  border: 1px solid #ccc;
+  padding: 3px 10px;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.filter-btn.active {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+.shell-gen-cat-header {
+  font-weight: bold;
+  font-size: 12px;
+  padding: 6px 0 4px;
+  cursor: pointer;
+  user-select: none;
+}
+.shell-gen-cmd {
+  padding: 3px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 11px;
+}
+.shell-gen-cmd:hover {
+  background: #f0f0f0;
+}
+.shell-gen-name {
+  color: #888;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+.shell-gen-cmd code {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
 /* ===== Terminal ===== */
 .terminal-header {
   display: flex;
@@ -404,4 +505,97 @@ body {
   margin-top: 6px;
   font-size: 11px;
   color: #888;
+}
+
+/* ===== Copy modal ===== */
+.copy-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.copy-modal.visible {
+  display: flex;
+}
+.copy-modal-box {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 600px;
+  width: 90%;
+}
+.copy-modal-msg {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #666;
+}
+.copy-modal-text {
+  width: 100%;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  resize: none;
+  outline: none;
+  background: #fafafa;
+}
+.copy-modal-text:focus {
+  border-color: #000;
+}
+
+/* ===== Settings ===== */
+.settings-section {
+  margin-bottom: 20px;
+}
+.settings-label {
+  display: block;
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.settings-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 7px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+}
+.settings-input:focus {
+  border-color: #000;
+}
+.settings-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #888;
+  line-height: 1.6;
+}
+
+/* ===== Interactive hex dump ===== */
+.hex-line {
+  line-height: 1.5;
+}
+.hex-offset {
+  color: #999;
+  user-select: none;
+}
+.hex-sep {
+  color: #999;
+  user-select: none;
+}
+.hb, .hc {
+  cursor: default;
+  border-radius: 2px;
+  transition: background 0.05s;
+}
+.hex-hl {
+  background: #ffe066;
+  color: #000;
 }

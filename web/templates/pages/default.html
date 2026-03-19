@@ -5,6 +5,7 @@
     <div class="tabs">
       <div id="tab-files" class="tab active">File Share</div>
       <div id="tab-shells" class="tab">Reverse Shells</div>
+      <div id="tab-settings" class="tab tab-icon" title="Settings">&#9881;</div>
     </div>
     <div id="file-share" class="content">
       <div class="toolbar">
@@ -38,7 +39,36 @@
       <input type="file" id="file-input" hidden>
     </div>
     <div id="shell-handler" class="content hidden">
-      <div id="shell-list-view">
+      <div id="shell-main-view">
+        <div id="shell-gen-toggle" class="shell-gen-toggle">&#9654; Shell Generator</div>
+        <div id="shell-gen" class="shell-gen hidden">
+          <div class="shell-gen-controls">
+            <div class="shell-gen-row">
+              <label for="rsh-ip">IP</label>
+              <input id="rsh-ip" type="text">
+            </div>
+            <div class="shell-gen-row">
+              <label for="rsh-port">Port</label>
+              <input id="rsh-port" type="text" size="6">
+            </div>
+            <div class="shell-gen-row">
+              <label for="rsh-shell">Shell</label>
+              <select id="rsh-shell">
+                <option>/bin/bash</option>
+                <option>/bin/sh</option>
+                <option>/bin/zsh</option>
+                <option>cmd.exe</option>
+                <option>powershell.exe</option>
+              </select>
+            </div>
+            <div class="shell-gen-filters">
+              <button class="filter-btn active" data-os="all">All</button>
+              <button class="filter-btn" data-os="linux">Linux</button>
+              <button class="filter-btn" data-os="windows">Windows</button>
+            </div>
+          </div>
+          <div id="shell-gen-list"></div>
+        </div>
         <div class="shell-info">Listener port: {{.ShellPort}}</div>
         <ul id="shell-list"></ul>
       </div>
@@ -49,6 +79,20 @@
         </div>
         <pre id="terminal-output"></pre>
         <input id="terminal-input" type="text" autofocus>
+      </div>
+    </div>
+    <div id="settings-panel" class="content hidden">
+      <div class="settings-section">
+        <label class="settings-label" for="setting-host">Host / IP for commands</label>
+        <input id="setting-host" class="settings-input" type="text" placeholder="e.g. 10.10.14.5:8080">
+        <div class="settings-hint">Used in wget, curl, certutil, /dev/tcp commands.<br>Include port if non-standard. Leave empty to use current address.</div>
+      </div>
+      <div class="settings-section">
+        <label class="settings-label">Server info</label>
+        <div class="settings-hint">
+          Web: <span id="settings-web-addr"></span><br>
+          Shell listener: 0.0.0.0:{{.ShellPort}}
+        </div>
       </div>
     </div>
   </div>
@@ -67,6 +111,13 @@
       </li>
     </ul>
   </nav>
+<div id="copy-modal" class="copy-modal">
+  <div class="copy-modal-box">
+    <div class="copy-modal-msg">Auto-copy is not available over HTTP. Select and copy manually (Ctrl+C):</div>
+    <textarea id="copy-modal-text" class="copy-modal-text" rows="2" readonly></textarea>
+    <button id="copy-modal-close" class="file-share-button">Close</button>
+  </div>
+</div>
 <script>window.TWEAKER={shellPort:{{.ShellPort}}};</script>
 <script src="/static/js/script.js"></script>
 {{ end }}
