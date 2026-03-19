@@ -1,3 +1,94 @@
 # Tweaker
-## Idea
-Just a little server for helping standoff365
+
+All-in-one web toolkit for CTF competitions and penetration testing. Single binary, zero dependencies, works in air-gapped environments.
+
+## Features
+
+**File Share** — upload, download, browse and manage files through the web UI. Right-click any file to get ready-made download commands for the target (wget, curl, certutil, PowerShell, python, php, /dev/tcp, nc). Public `/dl/` endpoint serves files without auth for easy target retrieval.
+
+**TCP Catch & Serve** — one-click TCP listeners for file exfiltration (`cat file > /dev/tcp/...`) and delivery (`cat < /dev/tcp/...`) when HTTP isn't available on the target.
+
+**Reverse Shell Manager** — built-in TCP listener accepts reverse shells and bridges them to the browser via WebSocket. Features:
+- **xterm.js terminal** — full ANSI rendering, cursor positioning, colors, Ctrl+C/D/Tab, clipboard
+- **Multiple tabs** — connect to several shells simultaneously, switch between them
+- **Output buffer** — 64KB ring buffer per session, reconnect without losing history
+- **Fullscreen mode** — toggle for focused work
+- **Command templates** — one-click paste of common commands (PTY upgrade, LinPEAS, SUID search, etc.), editable via API
+- **Download/Upload buttons** — paste transfer commands directly into the active shell
+
+**Shell Generator** — built-in reverse shell payload generator with 30+ templates (Bash, Netcat, Socat, Python, PHP, Perl, Ruby, PowerShell, etc.), filterable by OS, with configurable IP/port/shell.
+
+**File Viewer** — chunked text/hex preview with interactive hex dump (byte highlight on hover), lazy-loading for large files.
+
+## Quick Start
+
+```bash
+# Build
+make build
+
+# Run (generates random password if not configured)
+./bin/tweaker
+
+# Run with custom config
+./bin/tweaker -c config/config.yaml
+```
+
+The binary embeds all frontend assets — no external files needed at runtime.
+
+## Configuration
+
+`config/config.yaml`:
+
+```yaml
+server:
+  host: "0.0.0.0"
+  port: 8080
+
+log:
+  level: "info"       # debug, info, warn, error
+  env: "local"        # local, prod
+
+auth:
+  username: "admin"
+  password: ""         # auto-generated if empty
+  secret_cookie: ""    # auto-generated if empty
+
+files:
+  directory: "./files"
+
+shells:
+  listen_port: 4444
+
+templates:
+  file: "templates.yaml"
+```
+
+If `password` is empty, credentials are printed to stdout on startup.
+
+## API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/files?path=` | List directory |
+| `POST` | `/api/files/upload?path=` | Upload file (multipart) |
+| `POST` | `/api/files/mkdir` | Create directory |
+| `DELETE` | `/api/files?path=` | Delete file/directory |
+| `POST` | `/api/files/rename` | Rename file/directory |
+| `GET` | `/api/files/download?path=` | Download file |
+| `GET` | `/api/files/preview?path=&mode=&offset=` | Chunked preview (text/hex) |
+| `POST` | `/api/files/serve` | Serve file over one-shot TCP port |
+| `POST` | `/api/files/catch` | Catch incoming file over TCP |
+| `GET` | `/api/shells` | List active shell sessions |
+| `DELETE` | `/api/shells/{id}` | Kill shell session |
+| `POST` | `/api/shells/listener` | Restart shell listener on new port |
+| `GET` | `/ws/shell/{id}` | WebSocket terminal bridge |
+| `GET` | `/api/templates` | List command templates |
+| `POST` | `/api/templates` | Add command template |
+| `DELETE` | `/api/templates` | Delete command template |
+| `GET` | `/dl/*` | Public file download (no auth) |
+
+## Stack
+
+- **Backend**: Go 1.24, `net/http` mux, gorilla/websocket, zap logger
+- **Frontend**: Vanilla JS, xterm.js 5.5 (embedded), JetBrains Mono
+- **Build**: Single static binary (`CGO_ENABLED=0`), all assets embedded via `go:embed`
