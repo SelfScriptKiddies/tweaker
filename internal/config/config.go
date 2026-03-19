@@ -12,11 +12,12 @@ import (
 )
 
 type Config struct {
-	Server ServerConfig `yaml:"server"`
-	Log    LogConfig    `yaml:"log"`
-	Auth   AuthConfig   `yaml:"auth"`
-	Files  FilesConfig  `yaml:"files"`
-	Shells ShellsConfig `yaml:"shells"`
+	Server    ServerConfig    `yaml:"server"`
+	Log       LogConfig       `yaml:"log"`
+	Auth      AuthConfig      `yaml:"auth"`
+	Files     FilesConfig     `yaml:"files"`
+	Shells    ShellsConfig    `yaml:"shells"`
+	Templates TemplatesConfig `yaml:"templates"`
 }
 
 type ServerConfig struct {
@@ -43,13 +44,18 @@ type ShellsConfig struct {
 	ListenPort int `yaml:"listen_port"`
 }
 
+type TemplatesConfig struct {
+	File string `yaml:"file"`
+}
+
 func Load(path string) (*Config, error) {
 	cfg := &Config{
 		Server: ServerConfig{Host: "0.0.0.0", Port: 8080},
 		Log:    LogConfig{Level: "info", Env: "local"},
 		Auth:   AuthConfig{Username: "admin"},
 		Files:  FilesConfig{Directory: "./files"},
-		Shells: ShellsConfig{ListenPort: 4444},
+		Shells:    ShellsConfig{ListenPort: 4444},
+		Templates: TemplatesConfig{File: "templates.yaml"},
 	}
 
 	if path != "" {

@@ -75,10 +75,17 @@
       <div id="shell-terminal" class="hidden">
         <div class="terminal-header">
           <button id="terminal-back" class="file-share-button">Back</button>
-          <span id="terminal-title"></span>
+          <div id="shell-tab-bar" class="shell-tab-bar"></div>
+          <div class="terminal-toolbar">
+            <select id="template-select" class="template-select">
+              <option value="">Templates...</option>
+            </select>
+            <button id="term-download-btn" class="file-share-button" title="Download file to target">DL</button>
+            <button id="term-upload-btn" class="file-share-button" title="Upload file from target">UL</button>
+            <button id="term-fullscreen-btn" class="file-share-button" title="Toggle fullscreen">&#x26F6;</button>
+          </div>
         </div>
-        <pre id="terminal-output"></pre>
-        <input id="terminal-input" type="text" autofocus>
+        <div id="terminal-container"></div>
       </div>
     </div>
     <div id="settings-panel" class="content hidden">
@@ -88,10 +95,18 @@
         <div class="settings-hint">Used in wget, curl, certutil, /dev/tcp commands.<br>Include port if non-standard. Leave empty to use current address.</div>
       </div>
       <div class="settings-section">
+        <label class="settings-label" for="setting-shell-port">Shell listener port</label>
+        <div class="settings-row">
+          <input id="setting-shell-port" class="settings-input settings-input-short" type="number" min="1" max="65535">
+          <button id="setting-shell-port-btn" class="file-share-button">Apply</button>
+        </div>
+        <div class="settings-hint">TCP port for incoming reverse shells. Changing restarts the listener.</div>
+      </div>
+      <div class="settings-section">
         <label class="settings-label">Server info</label>
         <div class="settings-hint">
           Web: <span id="settings-web-addr"></span><br>
-          Shell listener: 0.0.0.0:{{.ShellPort}}
+          Shell listener: 0.0.0.0:<span id="settings-shell-port-display">{{.ShellPort}}</span>
         </div>
       </div>
     </div>
@@ -119,5 +134,7 @@
   </div>
 </div>
 <script>window.TWEAKER={shellPort:{{.ShellPort}}};</script>
+<script src="/static/vendor/xterm/xterm.min.js"></script>
+<script src="/static/vendor/xterm/xterm-addon-fit.min.js"></script>
 <script src="/static/js/script.js"></script>
 {{ end }}

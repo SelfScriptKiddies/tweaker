@@ -50,6 +50,8 @@ func main() {
 		log.Fatal("Shell listener failed", zap.Error(err))
 	}
 
+	templateManager := handler.NewTemplateManager(cfg.Templates.File, log)
+
 	authConfig := middleware.AuthConfig{
 		Username:     cfg.Auth.Username,
 		Password:     cfg.Auth.Password,
@@ -84,7 +86,13 @@ func main() {
 	// Shell API
 	mux.HandleFunc("GET /api/shells", shellManager.ListHandler)
 	mux.HandleFunc("DELETE /api/shells/{id}", shellManager.KillHandler)
+	mux.HandleFunc("POST /api/shells/listener", shellManager.RestartHandler)
 	mux.HandleFunc("GET /ws/shell/{id}", shellManager.WebSocketHandler)
+
+	// Template API
+	mux.HandleFunc("GET /api/templates", templateManager.ListHandler)
+	mux.HandleFunc("POST /api/templates", templateManager.AddHandler)
+	mux.HandleFunc("DELETE /api/templates", templateManager.DeleteHandler)
 
 	// Static (embedded)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(staticFS)))

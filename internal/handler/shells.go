@@ -13,14 +13,18 @@ import (
 	"go.uber.org/zap"
 )
 
+const outputBufMax = 64 * 1024 // 64KB ring buffer per session
+
 type ShellSession struct {
 	ID          int       `json:"id"`
 	RemoteAddr  string    `json:"remote_addr"`
 	ConnectedAt time.Time `json:"connected_at"`
 
-	conn   net.Conn
-	wsConn *websocket.Conn
-	wsMu   sync.Mutex
+	conn      net.Conn
+	wsConn    *websocket.Conn
+	wsMu      sync.Mutex
+	outputBuf []byte
+	bufMu     sync.Mutex
 }
 
 type ShellManager struct {
@@ -29,6 +33,8 @@ type ShellManager struct {
 	nextID   int
 	logger   *zap.Logger
 	upgrader websocket.Upgrader
+	listener net.Listener
+	Port     int
 }
 
 func NewShellManager(logger *zap.Logger) *ShellManager {
@@ -47,14 +53,29 @@ func (sm *ShellManager) StartListener(port int) error {
 	if err != nil {
 		return err
 	}
+
+	sm.mu.Lock()
+	if sm.listener != nil {
+		sm.listener.Close()
+	}
+	sm.listener = ln
+	sm.Port = port
+	sm.mu.Unlock()
+
 	sm.logger.Info("Shell listener started", zap.String("addr", addr))
 
 	go func() {
 		for {
 			conn, err := ln.Accept()
 			if err != nil {
+				sm.mu.RLock()
+				replaced := sm.listener != ln
+				sm.mu.RUnlock()
+				if replaced {
+					return
+				}
 				sm.logger.Error("Accept error", zap.Error(err))
-				continue
+				return
 			}
 			sm.addSession(conn)
 		}
@@ -93,9 +114,21 @@ func (sm *ShellManager) readTCP(session *ShellSession) {
 			sm.removeSession(session.ID)
 			return
 		}
+
+		data := buf[:n]
+
+		// Append to output buffer (ring: keep last 64KB)
+		session.bufMu.Lock()
+		session.outputBuf = append(session.outputBuf, data...)
+		if len(session.outputBuf) > outputBufMax {
+			session.outputBuf = session.outputBuf[len(session.outputBuf)-outputBufMax:]
+		}
+		session.bufMu.Unlock()
+
+		// Forward to WS as binary
 		session.wsMu.Lock()
 		if session.wsConn != nil {
-			session.wsConn.WriteMessage(websocket.TextMessage, buf[:n])
+			session.wsConn.WriteMessage(websocket.BinaryMessage, data)
 		}
 		session.wsMu.Unlock()
 	}
@@ -126,10 +159,47 @@ func (sm *ShellManager) ListHandler(w http.ResponseWriter, r *http.Request) {
 			ConnectedAt: s.ConnectedAt,
 		})
 	}
+	port := sm.Port
 	sm.mu.RUnlock()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{"shells": shells})
+	json.NewEncoder(w).Encode(map[string]interface{}{"shells": shells, "port": port})
+}
+
+func (sm *ShellManager) RestartHandler(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Port  int  `json:"port"`
+		Force bool `json:"force"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		jsonError(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+	if body.Port < 1 || body.Port > 65535 {
+		jsonError(w, "port must be 1-65535", http.StatusBadRequest)
+		return
+	}
+
+	sm.mu.RLock()
+	active := len(sm.sessions)
+	sm.mu.RUnlock()
+
+	if active > 0 && !body.Force {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"warning": fmt.Sprintf("%d active session(s) will be disconnected", active),
+			"active":  active,
+		})
+		return
+	}
+
+	if err := sm.StartListener(body.Port); err != nil {
+		jsonError(w, "failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"status": "ok", "port": body.Port})
 }
 
 func (sm *ShellManager) KillHandler(w http.ResponseWriter, r *http.Request) {
@@ -175,6 +245,17 @@ func (sm *ShellManager) WebSocketHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// Send buffered output as first message
+	session.bufMu.Lock()
+	if len(session.outputBuf) > 0 {
+		replay := make([]byte, len(session.outputBuf))
+		copy(replay, session.outputBuf)
+		session.bufMu.Unlock()
+		wsConn.WriteMessage(websocket.BinaryMessage, replay)
+	} else {
+		session.bufMu.Unlock()
+	}
+
 	// Replace existing WS connection if any
 	session.wsMu.Lock()
 	if session.wsConn != nil {
@@ -192,7 +273,7 @@ func (sm *ShellManager) WebSocketHandler(w http.ResponseWriter, r *http.Request)
 		wsConn.Close()
 	}()
 
-	// WS -> TCP
+	// WS -> TCP (binary)
 	for {
 		_, msg, err := wsConn.ReadMessage()
 		if err != nil {

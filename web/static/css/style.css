@@ -7,7 +7,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #000;
+  background: linear-gradient(160deg, #080812 0%, #0e0e24 100%);
   font-family: "JetBrains Mono", "Consolas", "SF Mono", "Menlo", "Liberation Mono", monospace;
   color: #000;
   font-size: 13px;
@@ -34,14 +34,31 @@ body {
 .container {
   background: #fff;
   border-radius: 12px;
-  width: 800px;
-  height: 600px;
+  width: 90vw;
+  max-width: 1100px;
+  height: 85vh;
+  max-height: 800px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+}
+.container.fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
 }
 .container > h2 {
   text-align: center;
+}
+#app-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 /* ===== Login ===== */
@@ -101,6 +118,7 @@ body {
   display: flex;
   height: 44px;
   border-bottom: 1px solid #ddd;
+  flex-shrink: 0;
 }
 .tab {
   flex: 1;
@@ -125,6 +143,7 @@ body {
 }
 .content {
   flex: 1;
+  min-height: 0;
   position: relative;
   padding: 16px 20px;
   overflow-y: auto;
@@ -287,6 +306,21 @@ body {
   display: block;
 }
 
+/* ===== Shell handler layout ===== */
+#shell-handler {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#shell-handler.hidden {
+  display: none;
+}
+#shell-main-view {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
 /* ===== Shell list ===== */
 .shell-info {
   color: #888;
@@ -418,38 +452,107 @@ body {
 .terminal-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
+  gap: 8px;
+  padding: 8px 12px;
   border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }
-#terminal-title {
-  font-weight: bold;
-  font-size: 12px;
+.terminal-toolbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
 }
-#terminal-output {
-  background: #0c0c0c;
-  color: #0f0;
-  padding: 10px;
-  height: 380px;
-  overflow-y: auto;
-  border-radius: 5px 5px 0 0;
-  margin: 0;
-  font-size: 13px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-#terminal-input {
-  width: 100%;
-  background: #0c0c0c;
-  color: #0f0;
-  border: none;
-  border-top: 1px solid #222;
-  padding: 8px 10px;
+.template-select {
+  padding: 3px 8px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 11px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
   outline: none;
-  border-radius: 0 0 5px 5px;
+  background: #fff;
+  cursor: pointer;
+  max-width: 160px;
+}
+#terminal-container {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: #1e1e1e;
+}
+.xterm-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 4px;
+}
+#shell-terminal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+#shell-terminal.hidden {
+  display: none;
+}
+
+/* ===== xterm scrollbar ===== */
+.xterm-viewport::-webkit-scrollbar {
+  width: 8px;
+}
+.xterm-viewport::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+.xterm-viewport::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+.xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+.xterm-viewport {
+  scrollbar-color: #555 #1e1e1e;
+  scrollbar-width: thin;
+}
+
+/* ===== Shell tab bar ===== */
+.shell-tab-bar {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
+.shell-tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: #e7e7e7;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.shell-tab.active {
+  background: #1e1e1e;
+  color: #ccc;
+  border-color: #1e1e1e;
+}
+.shell-tab-close {
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.5;
+  cursor: pointer;
+}
+.shell-tab-close:hover {
+  opacity: 1;
 }
 
 /* ===== File viewer ===== */
@@ -570,6 +673,14 @@ body {
 }
 .settings-input:focus {
   border-color: #000;
+}
+.settings-input-short {
+  max-width: 100px;
+}
+.settings-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 .settings-hint {
   margin-top: 6px;
