@@ -6,57 +6,67 @@ import (
 	"strings"
 
 	"github.com/SelfScriptKiddies/tweaker/internal/middleware"
-	"github.com/ilyakaznacheev/cleanenv"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Server   ServerConfig   `yaml:"server"`
-	Log      LogConfig      `yaml:"log"`
-	Database DatabaseConfig `yaml:"database"`
-	Auth     AuthConfig     `yaml:"auth"`
+	Server ServerConfig `yaml:"server"`
+	Log    LogConfig    `yaml:"log"`
+	Auth   AuthConfig   `yaml:"auth"`
+	Files  FilesConfig  `yaml:"files"`
+	Shells ShellsConfig `yaml:"shells"`
 }
 
 type ServerConfig struct {
-	Host string `yaml:"host" env:"SERVER_HOST" default-env:"0.0.0.0"`
-	Port int    `yaml:"port" env:"SERVER_PORT" default-env:"8080"`
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 type LogConfig struct {
-	Level string `yaml:"level" env:"LOG_LEVEL" default-env:"info"`
-	// Can be: local, dev, prod
-	Env string `yaml:"env" env:"LOG_ENV" default-env:"dev"`
-}
-
-type DatabaseConfig struct {
-	Host    string `yaml:"host" env:"DATABASE_HOST" default-env:"db"`
-	Port    int    `yaml:"port" env:"DATABASE_PORT" default-env:"5432"`
-	User    string `yaml:"user" env:"DATABASE_USERNAME" default-env:"postgres"`
-	Pass    string `yaml:"pass" env:"DATABASE_PASSWORD" default-env:"postgres"`
-	Name    string `yaml:"name" env:"DATABASE_SCHEME" default-env:"tweaker"`
-	SSLMode string `yaml:"sslmode" env:"DATABASE_USER" default-env:"postgres"`
+	Level string `yaml:"level"`
+	Env   string `yaml:"env"`
 }
 
 type AuthConfig struct {
-	Username     string `yaml:"username" env:"WEB_USERNAME" default-env:"admin"`
-	Password     string `yaml:"password" env:"WEB_PASSWORD"`
-	SecretCookie string `yaml:"secret_cookie" env:"SECRET_COOKIE"`
+	Username     string `yaml:"username"`
+	Password     string `yaml:"password"`
+	SecretCookie string `yaml:"secret_cookie"`
+}
+
+type FilesConfig struct {
+	Directory string `yaml:"directory"`
+}
+
+type ShellsConfig struct {
+	ListenPort int `yaml:"listen_port"`
 }
 
 func Load(path string) (*Config, error) {
-	var cfg Config
-	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
-		return nil, err
+	cfg := &Config{
+		Server: ServerConfig{Host: "0.0.0.0", Port: 8080},
+		Log:    LogConfig{Level: "info", Env: "local"},
+		Auth:   AuthConfig{Username: "admin"},
+		Files:  FilesConfig{Directory: "./files"},
+		Shells: ShellsConfig{ListenPort: 4444},
+	}
+
+	if path != "" {
+		data, err := os.ReadFile(path)
+		if err == nil {
+			if err := yaml.Unmarshal(data, cfg); err != nil {
+				return nil, fmt.Errorf("config parse error: %w", err)
+			}
+		}
 	}
 
 	if cfg.Auth.SecretCookie == "" {
-		secretCookie, err := middleware.GenerateRandomHex(32)
-		fmt.Println("Generated secret cookie")
+		cookie, err := middleware.GenerateRandomHex(32)
 		if err != nil {
 			return nil, err
 		}
-		cfg.Auth.SecretCookie = secretCookie
+		cfg.Auth.SecretCookie = cookie
 	}
 
 	if cfg.Auth.Password == "" {
@@ -68,25 +78,21 @@ func Load(path string) (*Config, error) {
 		fmt.Printf("Generated credentials: %s:%s\n", cfg.Auth.Username, cfg.Auth.Password)
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
 
-func InitLogger(log_config LogConfig) (*zap.Logger, error) {
-	// Default level is info
+func InitLogger(logCfg LogConfig) (*zap.Logger, error) {
 	level := zapcore.InfoLevel
-	if err := level.Set(strings.ToLower(log_config.Level)); err != nil {
+	if err := level.Set(strings.ToLower(logCfg.Level)); err != nil {
 		return nil, err
 	}
 
-	env := strings.ToLower(log_config.Env)
-	if env == "prod" {
-		// Production config - JSON format, no colors
+	if strings.ToLower(logCfg.Env) == "prod" {
 		cfg := zap.NewProductionConfig()
 		cfg.Level = zap.NewAtomicLevelAt(level)
 		return cfg.Build()
 	}
 
-	// Development/Local config - colorful console output
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "T",
 		LevelKey:       "L",
@@ -96,10 +102,10 @@ func InitLogger(log_config LogConfig) (*zap.Logger, error) {
 		MessageKey:     "M",
 		StacktraceKey:  "S",
 		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.CapitalColorLevelEncoder,              // Color encoding for levels
-		EncodeTime:     zapcore.TimeEncoderOfLayout("01.01 15:04:05"), // Short time format HH:MM:SS
+		EncodeLevel:    zapcore.CapitalColorLevelEncoder,
+		EncodeTime:     zapcore.TimeEncoderOfLayout("01.01 15:04:05"),
 		EncodeDuration: zapcore.SecondsDurationEncoder,
-		EncodeCaller:   zapcore.ShortCallerEncoder, // Short caller format (file:line)
+		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
 
 	core := zapcore.NewCore(
@@ -108,6 +114,5 @@ func InitLogger(log_config LogConfig) (*zap.Logger, error) {
 		zap.NewAtomicLevelAt(level),
 	)
 
-	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
-	return logger, nil
+	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel)), nil
 }
