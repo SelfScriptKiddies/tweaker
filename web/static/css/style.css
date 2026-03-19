@@ -1,3 +1,6 @@
+* {
+  box-sizing: border-box;
+}
 body {
   margin: 0;
   height: 100vh;
@@ -5,29 +8,20 @@ body {
   justify-content: center;
   align-items: center;
   background: #000;
-  font-family: "Courier New", monospace;
+  font-family: "JetBrains Mono", "Consolas", "SF Mono", "Menlo", "Liberation Mono", monospace;
   color: #000;
-}
-
-.main-block {
-  margin: 2% auto;
-  width: 80%;
-  max-width: 1000px;
-  text-align: center;
-  background-color: #fff;
-  color: #000;
-  padding: 20px;
-  border-radius: 10px;
+  font-size: 13px;
 }
 
 .file-share-button {
   background-color: #e7e7e7;
   border-style: dashed;
-  border-color: #000000;
+  border-color: #000;
   border-radius: 30px;
-  width: 100px;
-  height: 30px;
-  cursor: pointer; 
+  padding: 4px 16px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
 }
 
 .error {
@@ -35,10 +29,6 @@ body {
   font-weight: bold;
   margin: 20px 0;
   text-align: center;
-}
-
-.form-group {
-  padding: 3px 0;
 }
 
 .container {
@@ -51,11 +41,66 @@ body {
   overflow: hidden;
 }
 .container > h2 {
-    text-align: center;
+  text-align: center;
 }
+
+/* ===== Login ===== */
+#login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+}
+.login-title {
+  font-size: 42px;
+  letter-spacing: 12px;
+  margin: 0;
+  font-weight: 700;
+}
+.login-subtitle {
+  color: #888;
+  font-size: 12px;
+  margin: 4px 0 32px 0;
+  letter-spacing: 3px;
+}
+#login-form {
+  display: flex;
+  flex-direction: column;
+  width: 280px;
+}
+#login-form input {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+}
+#login-form input:focus {
+  border-color: #000;
+}
+#login-form button {
+  padding: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+}
+#login-form button:hover {
+  background: #333;
+}
+
+/* ===== Tabs ===== */
 .tabs {
   display: flex;
-  height: 50px;
+  height: 44px;
+  border-bottom: 1px solid #ddd;
 }
 .tab {
   flex: 1;
@@ -65,106 +110,298 @@ body {
   cursor: pointer;
   user-select: none;
   border-bottom: 2px solid transparent;
-  transition: all 0.2s;
+  transition: all 0.15s;
   background: #fff;
+  font-size: 13px;
 }
 .tab.active {
-  background: #e0e0e0;
+  background: #f0f0f0;
   border-bottom: 2px solid #000;
 }
 .content {
   flex: 1;
   position: relative;
-  padding: 20px;
+  padding: 16px 20px;
   overflow-y: auto;
 }
 .hidden {
   display: none;
 }
-/* Login form styling */
-#login-form {
-  display: flex;
-  flex-direction: column;
-  width: 300px;
-  margin: auto;
-}
-#login-form input {
-  margin-bottom: 10px;
-  padding: 8px;
-  font-family: inherit;
-  font-size: 14px;
-}
-#login-form button {
-  padding: 8px;
-  font-family: inherit;
-  cursor: pointer;
-}
-/* File share styling */
-#file-share ul {
-  list-style: none;
-  padding: 0;
-}
-#file-share li {
-  padding: 6px;
+
+/* ===== Toolbar ===== */
+.toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #ddd;
-  position: relative;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+.toolbar > div {
+  display: flex;
+  gap: 6px;
+}
+#current-path {
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 13px;
+}
+#current-path:hover {
+  text-decoration: underline;
+}
+
+/* ===== Catch info bar ===== */
+.catch-info {
+  background: #f5f5f0;
+  border: 1px dashed #aaa;
+  border-radius: 5px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+.catch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+.catch-close-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+.catch-cmd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.catch-cmd:hover {
+  background: #e8e8e0;
+}
+.catch-cmd code {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.catch-cmd .copy-tag {
+  color: #888;
+  font-size: 10px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* ===== File list ===== */
+#file-share ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+#file-share li {
+  padding: 5px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
 }
-.actions {
-  cursor: pointer;
-  padding: 0 6px;
+#file-share li:hover {
+  background: #f8f8f8;
 }
-/* Context menu */
+.file-size {
+  color: #999;
+  font-size: 11px;
+}
+
+/* ===== Context menu ===== */
 .context-menu {
   position: fixed;
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 5px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   display: none;
   z-index: 1000;
+  font-size: 12px;
 }
-.context-menu ul {
+.context-menu > ul {
   margin: 0;
-  padding: 5px 0;
+  padding: 4px 0;
   list-style: none;
 }
-.context-menu li {
-  padding: 5px 20px;
+.context-menu > ul > li {
+  padding: 5px 16px;
   white-space: nowrap;
   cursor: pointer;
 }
-.context-menu li:hover {
-  background: #eee;
+.context-menu > ul > li:hover {
+  background: #f0f0f0;
+}
+.ctx-separator {
+  border-top: 1px solid #eee;
+  margin: 3px 0;
+  padding: 0 !important;
+  cursor: default !important;
 }
 .dropdown {
   position: relative;
 }
 .dropdown-menu {
   position: absolute;
-  top: 0;
+  top: -4px;
   left: 100%;
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 5px;
   display: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   white-space: nowrap;
+  padding: 4px 0;
+  list-style: none;
+  margin: 0;
+  max-width: 600px;
 }
-.dropdown:hover .dropdown-menu {
+.dropdown-menu li {
+  padding: 4px 12px;
+  font-size: 11px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dropdown-menu li:hover {
+  background: #f0f0f0;
+}
+.dropdown:hover > .dropdown-menu {
   display: block;
 }
-/* Reverse shells list */
+
+/* ===== Shell list ===== */
+.shell-info {
+  color: #888;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
 #shell-list {
   list-style: none;
   padding: 0;
 }
 #shell-list li {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
+  padding: 7px 6px;
+  border-bottom: 1px solid #f0f0f0;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+#shell-list li:hover {
+  background: #f8f8f8;
+}
+.shell-actions button {
+  margin-left: 5px;
+  background: #e7e7e7;
+  border: 1px dashed #000;
+  border-radius: 15px;
+  padding: 3px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+/* ===== Terminal ===== */
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+#terminal-title {
+  font-weight: bold;
+  font-size: 12px;
+}
+#terminal-output {
+  background: #0c0c0c;
+  color: #0f0;
+  padding: 10px;
+  height: 380px;
+  overflow-y: auto;
+  border-radius: 5px 5px 0 0;
+  margin: 0;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+#terminal-input {
+  width: 100%;
+  background: #0c0c0c;
+  color: #0f0;
+  border: none;
+  border-top: 1px solid #222;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  border-radius: 0 0 5px 5px;
+}
+
+/* ===== File viewer ===== */
+.viewer-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+#viewer-title {
+  flex: 1;
+  font-weight: bold;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.viewer-modes {
+  display: flex;
+  gap: 4px;
+}
+.viewer-mode-btn {
+  background: #e7e7e7;
+  border: 1px solid #ccc;
+  padding: 3px 12px;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.viewer-mode-btn.active {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+#viewer-content {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 0;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 440px;
+  white-space: pre;
+  word-wrap: normal;
+  color: #333;
+  tab-size: 4;
+}
+.viewer-info {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #888;
 }

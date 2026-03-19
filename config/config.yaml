@@ -1,20 +1,18 @@
 server:
   host: "0.0.0.0"
-  port: 8080
+  port: 18080
 
 log:
   level: "info"          # debug, info, warn, error
   env: "local"           # local, dev, prod
 
-database:
-  host: "db.example.com"
-  port: 5432
-  user: "myuser"
-  pass: "mypassword"
-  name: "mydb"
-  sslmode: "disable"
-
 auth:
   username: "admin"
   password: "admin"
-  secret_cookie: "authorized"
+  secret_cookie: ""      # auto-generated if empty
+
+files:
+  directory: "./files"   # file storage directory
+
+shells:
+  listen_port: 4444      # TCP port for reverse shell connections
