@@ -16,8 +16,18 @@ import (
 )
 
 func main() {
-	configPath := flag.String("c", "config/config.yaml", "config file path")
+	configPath := flag.String("c", "config.yaml", "config file path")
+	initConfig := flag.Bool("init", false, "generate default config.yaml and exit")
 	flag.Parse()
+
+	if *initConfig {
+		if err := config.Generate(*configPath); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Config written to %s\n", *configPath)
+		return
+	}
 
 	cfg, err := config.Load(*configPath)
 	if err != nil {

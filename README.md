@@ -22,22 +22,30 @@ All-in-one web toolkit for CTF competitions and penetration testing. Single bina
 
 ## Quick Start
 
+Download a binary from [Releases](https://github.com/SelfScriptKiddies/tweaker/releases) or build from source:
+
 ```bash
-# Build
 make build
-
-# Run (generates random password if not configured)
-./bin/tweaker
-
-# Run with custom config
-./bin/tweaker -c config/config.yaml
 ```
 
-The binary embeds all frontend assets — no external files needed at runtime.
+Then:
+
+```bash
+# Generate default config
+./tweaker --init
+
+# Edit to taste
+vim config.yaml
+
+# Run
+./tweaker
+```
+
+If no `config.yaml` is found, the server starts with defaults (port 8080, random password printed to stdout).
 
 ## Configuration
 
-`config/config.yaml`:
+`./tweaker --init` generates a `config.yaml` with all options:
 
 ```yaml
 server:
@@ -45,25 +53,35 @@ server:
   port: 8080
 
 log:
-  level: "info"       # debug, info, warn, error
-  env: "local"        # local, prod
+  level: "info"          # debug, info, warn, error
+  env: "local"           # local, prod
 
 auth:
   username: "admin"
-  password: ""         # auto-generated if empty
-  secret_cookie: ""    # auto-generated if empty
+  password: ""           # auto-generated if empty (printed to stdout)
+  secret_cookie: ""      # auto-generated if empty
 
 files:
-  directory: "./files"
+  directory: "./files"   # file storage directory
 
 shells:
-  listen_port: 4444
+  listen_port: 4444      # TCP port for reverse shell connections
 
 templates:
-  file: "templates.yaml"
+  file: "templates.yaml" # command templates file (created on first run)
 ```
 
-If `password` is empty, credentials are printed to stdout on startup.
+Use `-c path/to/config.yaml` to specify a custom config path.
+
+## Building
+
+```bash
+make build           # local binary → bin/tweaker
+make release-all     # all platforms (linux/mac/windows, amd64/arm64)
+make release-linux   # linux amd64 + arm64 only
+```
+
+All binaries are static (`CGO_ENABLED=0`), stripped, and embed all frontend assets.
 
 ## API
 

@@ -48,6 +48,36 @@ type TemplatesConfig struct {
 	File string `yaml:"file"`
 }
 
+const defaultConfigYAML = `server:
+  host: "0.0.0.0"
+  port: 8080
+
+log:
+  level: "info"          # debug, info, warn, error
+  env: "local"           # local, prod
+
+auth:
+  username: "admin"
+  password: ""           # auto-generated if empty (printed to stdout)
+  secret_cookie: ""      # auto-generated if empty
+
+files:
+  directory: "./files"   # file storage directory
+
+shells:
+  listen_port: 4444      # TCP port for reverse shell connections
+
+templates:
+  file: "templates.yaml" # command templates file (created on first run)
+`
+
+func Generate(path string) error {
+	if _, err := os.Stat(path); err == nil {
+		return fmt.Errorf("%s already exists", path)
+	}
+	return os.WriteFile(path, []byte(defaultConfigYAML), 0644)
+}
+
 func Load(path string) (*Config, error) {
 	cfg := &Config{
 		Server: ServerConfig{Host: "0.0.0.0", Port: 8080},
